@@ -464,4 +464,9 @@ data class OrtResult(
                 result = analyzer.result.withScopesResolved()
             )
         )
+
+    /**
+     * Return an object that can be used to navigate the dependency information contained in this result.
+     */
+    fun dependencyNavigator(): DependencyNavigator = DependencyTreeNavigator(this)
 }
