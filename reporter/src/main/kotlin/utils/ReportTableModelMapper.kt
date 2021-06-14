@@ -122,7 +122,7 @@ class ReportTableModelMapper(
         val excludes = ortResult.getExcludes()
 
         val projectTables = analyzerResult?.projects?.associateWith { project ->
-            val scopesForDependencies = project.getScopesForDependencies(excludes, ortResult.dependencyNavigator())
+            val scopesForDependencies = project.getScopesForDependencies(excludes, ortResult.dependencyNavigator)
             val pathExcludes = excludes.findPathExcludes(project, ortResult)
 
             val allIds = sortedSetOf(project.id)

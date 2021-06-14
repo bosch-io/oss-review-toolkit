@@ -95,6 +95,11 @@ data class OrtResult(
         )
     }
 
+    /** An object that can be used to navigate the dependency information contained in this result. */
+    @get:JsonIgnore
+    val dependencyNavigator: DependencyNavigator
+    get() = DependencyTreeNavigator
+
     private data class ProjectEntry(val project: Project, val isExcluded: Boolean)
 
     /**
@@ -140,7 +145,7 @@ data class OrtResult(
             val includedDependencies = mutableSetOf<Identifier>()
 
             projects.forEach { project ->
-                dependencyNavigator().scopeDependencies(project).forEach { (scopeName, dependencies) ->
+                dependencyNavigator.scopeDependencies(project).forEach { (scopeName, dependencies) ->
                     val isScopeExcluded = getExcludes().isScopeExcluded(scopeName)
                     allDependencies += dependencies
 
@@ -217,7 +222,7 @@ data class OrtResult(
             val allSubProjects = sortedSetOf<Identifier>()
 
             getProjects().forEach {
-                allSubProjects += it.collectSubProjects()
+                allSubProjects += dependencyNavigator.collectSubProjects(it)
             }
 
             projectsAndPackages -= allSubProjects
@@ -461,9 +466,4 @@ data class OrtResult(
                 result = analyzer.result.withScopesResolved()
             )
         )
-
-    /**
-     * Return an object that can be used to navigate the dependency information contained in this result.
-     */
-    fun dependencyNavigator(): DependencyNavigator = DependencyTreeNavigator
 }

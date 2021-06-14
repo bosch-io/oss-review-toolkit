@@ -71,7 +71,7 @@ internal class GenerateScopeExcludesCommand : CliktCommand(
 
 private fun OrtResult.generateScopeExcludes(): List<ScopeExclude> {
     val projectScopes = getProjects().flatMap { project ->
-        dependencyNavigator().scopeNames(project)
+        dependencyNavigator.scopeNames(project)
     }
 
     return getProjects().flatMap { project ->

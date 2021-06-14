@@ -36,7 +36,7 @@ class DependencyTreeNavigatorTest : WordSpec() {
 
     private val testProject = testResult.getProject(PROJECT_ID)!!
 
-    private val navigator = testResult.dependencyNavigator()
+    private val navigator = testResult.dependencyNavigator
 
     init {
         "scopeNames" should {
@@ -119,6 +119,17 @@ class DependencyTreeNavigatorTest : WordSpec() {
 
                 scopeDependencies["test"].orEmpty() should containExactly(id2)
                 matchedIds should containExactlyInAnyOrder(id1, id2)
+            }
+        }
+
+        "collectSubProjects" should {
+            "find all the sub projects of a project" {
+                val projectId = Identifier("SBT:com.pbassiner:multi1_2.12:0.1-SNAPSHOT")
+                val project = testResult.getProject(projectId)!!
+
+                val subProjectIds = navigator.collectSubProjects(project)
+
+                subProjectIds should containExactly(PROJECT_ID)
             }
         }
     }

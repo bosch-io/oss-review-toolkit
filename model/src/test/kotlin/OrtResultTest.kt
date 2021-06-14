@@ -166,7 +166,7 @@ class OrtResultTest : WordSpec({
                 "../analyzer/src/funTest/assets/projects/external/sbt-multi-project-example-expected-output.yml"
             )
 
-            ortResult.dependencyNavigator() shouldBe DependencyTreeNavigator
+            ortResult.dependencyNavigator shouldBe DependencyTreeNavigator
         }
     }
 })
