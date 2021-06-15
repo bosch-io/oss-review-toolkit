@@ -35,6 +35,22 @@ object DependencyTreeNavigator : DependencyNavigator {
         matcher: DependencyMatcher
     ): Map<String, Set<Identifier>> =
         project.scopes.associate { scope ->
-            scope.name to scope.collectDependencies(maxDepth) { matcher(it) }
+            scope.name to scope.collectDependencies(maxDepth, matcher.forReference())
+        }
+
+    override fun packageDependencies(
+        project: Project,
+        packageId: Identifier,
+        maxDepth: Int,
+        matcher: DependencyMatcher
+    ): Set<Identifier> =
+        project.findReferences(packageId).flatMapTo(mutableSetOf()) { ref ->
+            ref.collectDependencies(maxDepth, matcher.forReference())
         }
 }
+
+/**
+ * Return a predicate to match [PackageReference]s that evaluates the criteria of this [DependencyMatcher]. This is
+ * useful when invoking the classic API, which often uses such predicates as filters.
+ */
+private fun DependencyMatcher.forReference(): (PackageReference) -> Boolean = { invoke(it) }

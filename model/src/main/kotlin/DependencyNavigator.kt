@@ -83,6 +83,19 @@ interface DependencyNavigator {
     ): Map<String, Set<Identifier>>
 
     /**
+     * Return a set with the [Identifier]s of packages that are dependencies of package with the given [packageId] in
+     * the given [project]. Starting from [project], the dependency graph is searched for the package in question;
+     * then its dependencies are collected. As usual, it is possible to restrict the dependencies to be fetched with
+     * [maxDepth] and [matcher].
+     */
+    fun packageDependencies(
+        project: Project,
+        packageId: Identifier,
+        maxDepth: Int = -1,
+        matcher: DependencyMatcher = MATCH_ALL
+    ): Set<Identifier>
+
+    /**
      * Return the set of [Identifier]s that refer to sub-projects of the given [project].
      */
     fun collectSubProjects(project: Project): SortedSet<Identifier> =
