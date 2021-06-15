@@ -170,6 +170,57 @@ class DependencyTreeNavigatorTest : WordSpec() {
             }
         }
 
+        "getShortestPaths" should {
+            "return the shortest paths for a project" {
+                val paths = navigator.getShortestPaths(testProject)
+
+                paths.keys should haveSize(2)
+
+                paths["compile"]!! should org.ossreviewtoolkit.utils.test.containExactly(
+                    Identifier("Maven:ch.qos.logback:logback-classic:1.2.3") to emptyList(),
+                    Identifier("Maven:ch.qos.logback:logback-core:1.2.3") to listOf(
+                        Identifier("Maven:ch.qos.logback:logback-classic:1.2.3")
+                    ),
+                    Identifier("Maven:com.fasterxml.jackson.core:jackson-annotations:2.8.0") to listOf(
+                        Identifier("Maven:net.logstash.logback:logstash-logback-encoder:4.11"),
+                        Identifier("Maven:com.fasterxml.jackson.core:jackson-databind:2.8.9")
+                        ),
+                    Identifier("Maven:com.fasterxml.jackson.core:jackson-core:2.8.9") to listOf(
+                        Identifier("Maven:net.logstash.logback:logstash-logback-encoder:4.11"),
+                        Identifier("Maven:com.fasterxml.jackson.core:jackson-databind:2.8.9")
+                    ),
+                    Identifier("Maven:com.fasterxml.jackson.core:jackson-databind:2.8.9") to listOf(
+                        Identifier("Maven:net.logstash.logback:logstash-logback-encoder:4.11")
+                    ),
+                    Identifier("Maven:com.typesafe.akka:akka-actor_2.12:2.5.6") to listOf(
+                        Identifier("Maven:com.typesafe.akka:akka-stream_2.12:2.5.6")
+                    ),
+                    Identifier("Maven:com.typesafe.akka:akka-stream_2.12:2.5.6") to emptyList(),
+                    Identifier("Maven:com.typesafe:config:1.3.1") to emptyList(),
+                    Identifier("Maven:com.typesafe.scala-logging:scala-logging_2.12:3.7.2") to emptyList(),
+                    Identifier("Maven:com.typesafe:ssl-config-core_2.12:0.2.2") to listOf(
+                        Identifier("Maven:com.typesafe.akka:akka-stream_2.12:2.5.6")
+                    ),
+                    Identifier("Maven:net.logstash.logback:logstash-logback-encoder:4.11") to emptyList(),
+                    Identifier("Maven:org.scala-lang:scala-library:2.12.3") to emptyList(),
+                    Identifier("Maven:org.scala-lang:scala-reflect:2.12.2") to listOf(
+                        Identifier("Maven:com.typesafe.scala-logging:scala-logging_2.12:3.7.2")
+                    ),
+                    Identifier("Maven:org.scala-lang.modules:scala-java8-compat_2.12:0.8.0") to listOf(
+                        Identifier("Maven:com.typesafe.akka:akka-stream_2.12:2.5.6"),
+                        Identifier("Maven:com.typesafe.akka:akka-actor_2.12:2.5.6")
+                    ),
+                    Identifier("Maven:org.reactivestreams:reactive-streams:1.0.1") to listOf(
+                        Identifier("Maven:com.typesafe.akka:akka-stream_2.12:2.5.6")
+                    ),
+                    Identifier("Maven:org.slf4j:jcl-over-slf4j:1.7.25") to emptyList(),
+                    Identifier("Maven:org.slf4j:slf4j-api:1.7.25") to listOf(
+                        Identifier("Maven:ch.qos.logback:logback-classic:1.2.3")
+                    ),
+                )
+            }
+        }
+
         "collectSubProjects" should {
             "find all the sub projects of a project" {
                 val projectId = Identifier("SBT:com.pbassiner:multi1_2.12:0.1-SNAPSHOT")
