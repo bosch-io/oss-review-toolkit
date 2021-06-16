@@ -92,9 +92,11 @@ internal class StatisticsCalculator {
         ortResult
             .getProjects()
             .filterNot { project -> ignoreExcluded && ortResult.isExcluded(project.id) }
-            .flatMap { project -> project.scopes }
-            .filterNot { scope -> ignoreExcluded && ortResult.repository.config.excludes.isScopeExcluded(scope) }
-            .map { scope -> scope.getDependencyTreeDepth() }
+            .flatMap { project ->
+                val scopes = ortResult.dependencyNavigator.scopeNames(project)
+                (MutableList(scopes.size) { project }).zip(scopes)
+            }.filterNot { pair -> ignoreExcluded && ortResult.repository.config.excludes.isScopeExcluded(pair.second) }
+            .map { pair -> ortResult.dependencyNavigator.dependencyTreeDepth(pair.first, pair.second) }
             .maxOrNull() ?: 0
 
     private fun getIncludedScopes(ortResult: OrtResult): Set<String> =

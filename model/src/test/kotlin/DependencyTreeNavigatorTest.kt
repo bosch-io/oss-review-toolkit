@@ -27,6 +27,7 @@ import io.kotest.matchers.collections.containExactly
 import io.kotest.matchers.collections.containExactlyInAnyOrder
 import io.kotest.matchers.collections.haveSize
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
 
 import org.ossreviewtoolkit.utils.test.readOrtResult
@@ -184,7 +185,7 @@ class DependencyTreeNavigatorTest : WordSpec() {
                     Identifier("Maven:com.fasterxml.jackson.core:jackson-annotations:2.8.0") to listOf(
                         Identifier("Maven:net.logstash.logback:logstash-logback-encoder:4.11"),
                         Identifier("Maven:com.fasterxml.jackson.core:jackson-databind:2.8.9")
-                        ),
+                    ),
                     Identifier("Maven:com.fasterxml.jackson.core:jackson-core:2.8.9") to listOf(
                         Identifier("Maven:net.logstash.logback:logstash-logback-encoder:4.11"),
                         Identifier("Maven:com.fasterxml.jackson.core:jackson-databind:2.8.9")
@@ -229,6 +230,17 @@ class DependencyTreeNavigatorTest : WordSpec() {
                 val subProjectIds = navigator.collectSubProjects(project)
 
                 subProjectIds should containExactly(PROJECT_ID)
+            }
+        }
+
+        "dependencyTreeDepth" should {
+            "calculate the dependency tree depth for a project" {
+                navigator.dependencyTreeDepth(testProject, "compile") shouldBe 3
+                navigator.dependencyTreeDepth(testProject, "test") shouldBe 2
+            }
+
+            "return 0 if the scope cannot be resolved" {
+                navigator.dependencyTreeDepth(testProject, "unknownScope") shouldBe 0
             }
         }
     }
