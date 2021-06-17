@@ -30,6 +30,9 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNot
 
+import java.io.File
+import java.time.Instant
+
 import org.ossreviewtoolkit.utils.test.readOrtResult
 
 class DependencyTreeNavigatorTest : WordSpec() {
@@ -278,6 +281,61 @@ class DependencyTreeNavigatorTest : WordSpec() {
                 navigator.dependencyTreeDepth(testProject, "unknownScope") shouldBe 0
             }
         }
+
+        "collectIssues" should {
+            "return a map with all issues of the given dependencies" {
+                val project = projectWithIssues()
+                val dependencies = project.scopeDependencies.orEmpty().flatMap { it.dependencies }
+
+                val issues = DependencyNavigator.collectIssues(dependencies.asSequence())
+
+                issues should org.ossreviewtoolkit.utils.test.containExactly(
+                    Identifier("Unknown:org.apache.commons:commons-text:1.1") to setOf(
+                        OrtIssue(
+                            Instant.EPOCH,
+                            "Gradle",
+                            "Unresolved: ModuleVersionNotFoundException: Cannot resolve external dependency " +
+                                    "org.apache.commons:commons-text:1.1 because no repositories are defined."
+                        )
+                    ),
+                    Identifier("Unknown:junit:junit:4.12") to setOf(
+                        OrtIssue(
+                            Instant.EPOCH,
+                            "Gradle",
+                            "Unresolved: ModuleVersionNotFoundException: Cannot resolve external dependency " +
+                                    "junit:junit:4.12 because no repositories are defined."
+                        )
+                    )
+                )
+            }
+        }
+
+        "projectIssues" should {
+            "return the issues of a project" {
+                val project = projectWithIssues()
+
+                val issues = navigator.projectIssues(project)
+
+                issues should org.ossreviewtoolkit.utils.test.containExactly(
+                    Identifier("Unknown:org.apache.commons:commons-text:1.1") to setOf(
+                        OrtIssue(
+                            Instant.EPOCH,
+                            "Gradle",
+                            "Unresolved: ModuleVersionNotFoundException: Cannot resolve external dependency " +
+                                    "org.apache.commons:commons-text:1.1 because no repositories are defined."
+                        )
+                    ),
+                    Identifier("Unknown:junit:junit:4.12") to setOf(
+                        OrtIssue(
+                            Instant.EPOCH,
+                            "Gradle",
+                            "Unresolved: ModuleVersionNotFoundException: Cannot resolve external dependency " +
+                                    "junit:junit:4.12 because no repositories are defined."
+                        )
+                    )
+                )
+            }
+        }
     }
 }
 
@@ -287,3 +345,11 @@ private const val RESULT_FILE =
 
 /** Identifier of the project used by the tests. */
 private val PROJECT_ID = Identifier("SBT:com.pbassiner:common_2.12:0.1-SNAPSHOT")
+
+/**
+ * Return a [Project] with dependencies that have some issues.
+ */
+private fun projectWithIssues(): Project =
+    File("../analyzer/src/funTest/assets/projects/synthetic")
+        .resolve("gradle-expected-output-lib-without-repo.yml")
+        .readValue<ProjectAnalyzerResult>().project

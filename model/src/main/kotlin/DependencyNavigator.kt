@@ -59,6 +59,28 @@ interface DependencyNavigator {
          */
         fun Map<String, Set<Identifier>>.collectDependencies(): SortedSet<Identifier> =
             flatMapTo(sortedSetOf()) { it.value }
+
+        /**
+         * Return a map with all [OrtIssue]s found in the dependency graph spawned by [dependencies] grouped by their
+         * [Identifier]s.
+         */
+        fun collectIssues(dependencies: Sequence<DependencyNode>): Map<Identifier, Set<OrtIssue>> {
+            val collectedIssues = mutableMapOf<Identifier, MutableSet<OrtIssue>>()
+
+            fun addIssues(nodes: Sequence<DependencyNode>) {
+                nodes.forEach { node ->
+                    if (node.issues.isNotEmpty()) {
+                        collectedIssues.getOrPut(node.id) { mutableSetOf() } += node.issues
+                    }
+
+                    node.visitDependencies(::addIssues)
+                }
+            }
+
+            addIssues(dependencies)
+
+            return collectedIssues
+        }
     }
 
     /**
@@ -129,6 +151,12 @@ interface DependencyNavigator {
      */
     fun dependencyTreeDepth(project: Project, scopeName: String): Int =
         getTreeDepthRec(directDependencies(project, scopeName))
+
+    /**
+     * Return a map of all de-duplicated [OrtIssue]s associated by [Identifier] for the given [project].
+     */
+    fun projectIssues(project: Project): Map<Identifier, Set<OrtIssue>> =
+        collectIssues(scopeNames(project).asSequence().flatMap { directDependencies(project, it) })
 
     /**
      * Determine the map of shortest paths for all the dependencies of a project, given its map of [scopeDependencies]
